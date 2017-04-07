@@ -1,0 +1,13 @@
+b652557d4ebde1804e1f039db6ffca67 *DESCRIPTION
+c38dcc7073a5b07d61789723d96ac0b1 *NAMESPACE
+fd851e1a7e85a804d0b5d1ea38f50a2f *R/rdlocrand_fun.R
+755c6154482ad999e87b0d53edd75368 *R/rdlocrand_package.R
+2782e8a88df30f66bfc71b3ba9906ab2 *R/rdrandinf.R
+3dede548c089946dc9413c5d8582c5b0 *R/rdrbounds.R
+90418af32ea765c1bfd914391c68a180 *R/rdsensitivity.R
+084aab99085278eddba65fdbf8768be1 *R/rdwinselect.R
+e4358aed7d9c61127f114765e59c5689 *man/rdlocrand-package.Rd
+469f915bfc2a40ae278d2eeefb1c1add *man/rdrandinf.Rd
+92d155aa1b5d2fbe2d8ae17bb0abb08c *man/rdrbounds.Rd
+360984d4f8800fc53eda61634772454f *man/rdsensitivity.Rd
+d055b6e4b9bff3afab6724f6a77f1b61 *man/rdwinselect.Rd
