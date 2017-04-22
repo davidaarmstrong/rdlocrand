@@ -1,7 +1,7 @@
 
 #################################################################
 # Auxiliary functions for rdlocrand
-# !version 0.1 28-Mar-2017
+# !version 0.2 22-Apr-2017
 # Authors: Matias Cattaneo, Rocio Titiunik, Gonzalo Vazquez-Bare
 #################################################################
 
@@ -19,7 +19,7 @@ rdrandinf.model = function(Y,D,statistic,pvalue=FALSE,kweights,endogtr,delta='')
 
   Y = as.matrix(Y)
 
-  if (statistic=='ttest'){
+  if (statistic=='ttest'|statistic=='diffmeans'){
     if (all.equal(kweights,rep(1,n))==TRUE){
       Y1 = t(Y[D==1,])
       Y0 = t(Y[D==0,])
@@ -190,7 +190,56 @@ hotelT2 = function(X,D) {
 
 
 #################################################################
-# Find default window length in rdwinselect
+# Find window increments
+#################################################################
+
+findwobs = function(wobs,nwin,posl,posr,R,dups){
+
+  N = length(R)
+  Nc = sum(R<0)
+  Nt = sum(R>=0)
+  poslold = posl
+  posrold = posr
+  wlist = NULL
+  win = 1
+
+  while(win<=nwin & wobs<min(posl,Nt-(posr-Nc-1))){
+
+    poslold = posl
+    posrold = posr
+
+    while(dups[posl]<wobs & sum(R[posl]<=R[posl:poslold])<wobs){
+      posl = posl - dups[posl]
+    }
+
+    while(dups[posr]<wobs & sum(R[posrold:posr]<=R[posr])<wobs){
+      posr = posr + dups[posr]
+    }
+
+    if(abs(R[posl])<R[posr]){
+      posl = Nc + 1 - sum(-R[posr]<=R[1:Nc])
+    }
+
+    if(abs(R[posl])>R[posr]){
+      posr = sum(R[(Nc+1):N]<abs(R[posl])) + Nc
+    }
+
+    wlength = max(-R[posl],R[posr])
+    wlist = c(wlist,wlength)
+
+    posl = posl - 1
+    posr = posr + 1
+    win = win + 1
+
+  }
+
+  return(wlist)
+
+}
+
+
+#################################################################
+# Find window length - DEPRECATED: for backward compatibility
 #################################################################
 
 wlength = function(R,D,num){
@@ -211,7 +260,7 @@ wlength = function(R,D,num){
 
 
 #################################################################
-# Find default step in rdwinselect
+# Find default step - DEPRECATED: for backward compatibility
 #################################################################
 
 findstep = function(R,D,obsmin,obsstep,times) {

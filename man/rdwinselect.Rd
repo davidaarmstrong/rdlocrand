@@ -4,10 +4,11 @@
 \alias{rdwinselect}
 \title{Window selection for RD designs under local randomization}
 \usage{
-rdwinselect(R, X, cutoff = 0, obsmin = "", obsstep = "", wmin = "",
-  wstep = "", nwindows = 10, statistic = "ttest", approx = FALSE,
+rdwinselect(R, X, cutoff = 0, obsmin = "", wmin = "", wobs = "",
+  wstep = "", nwindows = 10, statistic = "diffmeans", approx = FALSE,
   p = 0, evalat = "cutoff", kernel = "uniform", reps = 1000,
-  seed = "", level = 0.15, plot = FALSE, quietly = FALSE)
+  seed = "", level = 0.15, plot = FALSE, quietly = FALSE,
+  obsstep = "")
 }
 \arguments{
 \item{R}{a vector containing the values of the running variable.}
@@ -18,15 +19,15 @@ rdwinselect(R, X, cutoff = 0, obsmin = "", obsstep = "", wmin = "",
 
 \item{obsmin}{the minimum number of observations above and below the cutoff in the smallest window. Default is 10.}
 
-\item{obsstep}{the minimum number of observations to be added on each side of the cutoff for the sequence of nested windows. Default is 2.}
+\item{wmin}{the smallest window to be used.}
 
-\item{wmin}{the smallest window to be used (if \code{minobs} is not specified). Specifying both \code{wmin} and \code{obsmin} returns an error.}
+\item{wobs}{the number of observations to be added at each side of the cutoff at each step.}
 
-\item{wstep}{the increment in window length (if \code{obsstep} is not specified).  Specifying both \code{obsstep} and \code{wstep} returns an error.}
+\item{wstep}{the increment in window length.}
 
 \item{nwindows}{the number of windows to be used. Default is 10.}
 
-\item{statistic}{the statistic to be used in the balance tests. Allowed options are \code{ttest} (difference in means statistic), \code{ksmirnov} (Kolmogorov-Smirnov statistic), \code{ranksum} (Wilcoxon-Mann-Whitney standardized statistic) and \code{hotelling} (Hotelling's T-squared statistic). Default option is \code{ttest}.}
+\item{statistic}{the statistic to be used in the balance tests. Allowed options are \code{diffmeans} (difference in means statistic), \code{ksmirnov} (Kolmogorov-Smirnov statistic), \code{ranksum} (Wilcoxon-Mann-Whitney standardized statistic) and \code{hotelling} (Hotelling's T-squared statistic). Default option is \code{diffmeans}. The statistic \code{ttest} is equivalent to \code{diffmeans} and included for backward compatibility.}
 
 \item{approx}{forces the command to conduct the covariate balance tests using a large-sample approximation instead of finite-sample exact randomization inference methods.}
 
@@ -45,6 +46,8 @@ rdwinselect(R, X, cutoff = 0, obsmin = "", obsstep = "", wmin = "",
 \item{plot}{draws a scatter plot of the minimum p-value from the covariate balance test against window length.}
 
 \item{quietly}{suppress output}
+
+\item{obsstep}{the minimum number of observations to be added on each side of the cutoff for the sequence of fixed-increment nested windows. Default is 2. This option is deprecated and only included for backward compatibility.}
 }
 \value{
 \item{window}{recommended window (NA is covariates are not specified)}
@@ -65,10 +68,10 @@ rdwinselect(R, X, cutoff = 0, obsmin = "", obsstep = "", wmin = "",
 # Toy dataset
 X <- array(rnorm(200),dim=c(100,2))
 R <- X[1,] + X[2,] + rnorm(100)
-# Window selection
-tmp <- rdwinselect(R,X)
-# Window selection setting initial window and step
+# Window selection adding 5 observations at each step
 # Note: low number of replications to speed up process.
+tmp <- rdwinselect(R,X,obsmin=10,wobs=5,reps=500)
+# Window selection setting initial window and step
 # The user should increase the number of replications.
 tmp <- rdwinselect(R,X,wmin=.5,wstep=.125,reps=500)
 # Window selection with approximate (large sample) inference and p-value plot
@@ -77,11 +80,11 @@ tmp <- rdwinselect(R,X,wmin=.5,wstep=.125,approx=TRUE,nwin=80,quietly=TRUE,plot=
 
 }
 \references{
-M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate.} \emph{Journal of Causal Inference} 3(1): 1-24.
+M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
 
-M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization.} \emph{Stata Journal} 16(2): 331-367.
+M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
 
-M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality.} \emph{Journal of Policy Analysis and Management}, forthcoming.
+M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management}, forthcoming.
 }
 \author{
 Matias Cattaneo, University of Michigan. \email{cattaneo@umich.edu}

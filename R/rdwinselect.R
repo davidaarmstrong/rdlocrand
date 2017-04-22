@@ -1,7 +1,7 @@
 
 ###################################################################
 # rdwinselect: window selection for randomization inference in RD
-# !version 0.1 4-Apr-2017
+# !version 0.2 22-Apr-2017
 # Authors: Matias Cattaneo, Rocio Titiunik, Gonzalo Vazquez-Bare
 ###################################################################
 
@@ -24,22 +24,22 @@
 #' Gonzalo Vazquez-Bare, University of Michigan. \email{gvazquez@umich.edu}
 #'
 #' @references
-#' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate.} \emph{Journal of Causal Inference} 3(1): 1-24.
+#' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
 #'
-#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization.} \emph{Stata Journal} 16(2): 331-367.
+#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
 #'
-#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality.} \emph{Journal of Policy Analysis and Management}, forthcoming.
+#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management}, forthcoming.
 #'
 #'
 #' @param R a vector containing the values of the running variable.
 #' @param X the matrix of covariates to be used in the balancing tests. The matrix is optional but the recommended window is only provided when at least one covariate is specified. This should be a matrix of size n x k where n is the total sample size and $k$ is the number of covariates.
 #' @param cutoff the RD cutoff (default is 0).
 #' @param obsmin the minimum number of observations above and below the cutoff in the smallest window. Default is 10.
-#' @param obsstep the minimum number of observations to be added on each side of the cutoff for the sequence of nested windows. Default is 2.
-#' @param wmin the smallest window to be used (if \code{minobs} is not specified). Specifying both \code{wmin} and \code{obsmin} returns an error.
-#' @param wstep the increment in window length (if \code{obsstep} is not specified).  Specifying both \code{obsstep} and \code{wstep} returns an error.
+#' @param wmin the smallest window to be used.
+#' @param wobs the number of observations to be added at each side of the cutoff at each step.
+#' @param wstep the increment in window length.
 #' @param nwindows the number of windows to be used. Default is 10.
-#' @param statistic the statistic to be used in the balance tests. Allowed options are \code{ttest} (difference in means statistic), \code{ksmirnov} (Kolmogorov-Smirnov statistic), \code{ranksum} (Wilcoxon-Mann-Whitney standardized statistic) and \code{hotelling} (Hotelling's T-squared statistic). Default option is \code{ttest}.
+#' @param statistic the statistic to be used in the balance tests. Allowed options are \code{diffmeans} (difference in means statistic), \code{ksmirnov} (Kolmogorov-Smirnov statistic), \code{ranksum} (Wilcoxon-Mann-Whitney standardized statistic) and \code{hotelling} (Hotelling's T-squared statistic). Default option is \code{diffmeans}. The statistic \code{ttest} is equivalent to \code{diffmeans} and included for backward compatibility.
 #' @param approx forces the command to conduct the covariate balance tests using a large-sample approximation instead of finite-sample exact randomization inference methods.
 #' @param p the order of the polynomial for outcome adjustment model (for covariates). Default is 0.
 #' @param evalat specifies the point at which the adjusted variable is evaluated. Allowed options are \code{cutoff} and \code{means}. Default is \code{cutoff}.
@@ -49,6 +49,7 @@
 #' @param level the minimum accepted value of the p-value from the covariate balance tests. Default is .15.
 #' @param plot draws a scatter plot of the minimum p-value from the covariate balance test against window length.
 #' @param quietly suppress output
+#' @param obsstep the minimum number of observations to be added on each side of the cutoff for the sequence of fixed-increment nested windows. Default is 2. This option is deprecated and only included for backward compatibility.
 #'
 #' @return
 #' \item{window}{recommended window (NA is covariates are not specified)}
@@ -59,10 +60,10 @@
 #' # Toy dataset
 #' X <- array(rnorm(200),dim=c(100,2))
 #' R <- X[1,] + X[2,] + rnorm(100)
-#' # Window selection
-#' tmp <- rdwinselect(R,X)
-#' # Window selection setting initial window and step
+#' # Window selection adding 5 observations at each step
 #' # Note: low number of replications to speed up process.
+#' tmp <- rdwinselect(R,X,obsmin=10,wobs=5,reps=500)
+#' # Window selection setting initial window and step
 #' # The user should increase the number of replications.
 #' tmp <- rdwinselect(R,X,wmin=.5,wstep=.125,reps=500)
 #' # Window selection with approximate (large sample) inference and p-value plot
@@ -75,11 +76,11 @@
 rdwinselect = function(R, X,
                        cutoff=0,
                        obsmin='',
-                       obsstep = '',
                        wmin = '',
+                       wobs = '',
                        wstep = '',
                        nwindows = 10,
-                       statistic = 'ttest',
+                       statistic = 'diffmeans',
                        approx = FALSE,
                        p = 0,
                        evalat = 'cutoff',
@@ -88,7 +89,8 @@ rdwinselect = function(R, X,
                        seed = '',
                        level = .15,
                        plot = FALSE,
-                       quietly = FALSE) {
+                       quietly = FALSE,
+                       obsstep = '') {
 
 
   #################################################################
@@ -97,18 +99,34 @@ rdwinselect = function(R, X,
 
   if (cutoff<=min(R,na.rm=TRUE) | cutoff>=max(R,na.rm=TRUE)){stop('Cutoff must be within the range of the running variable')}
   if (p<0){stop('p must be a positive integer')}
-  if (p>0 & approx==TRUE & statistic!='ttest'){stop('approximate and p>1 can only be combined with ttest')}
-  if (statistic!='ttest' & statistic!='ksmirnov' & statistic!='ranksum' & statistic!='hotelling'){stop(paste(statistic,'not a valid statistic'))}
+  if (p>0 & approx==TRUE & statistic!='ttest' & statistic!='diffmeans'){stop('approximate and p>1 can only be combined with ttest')}
+  if (statistic!='diffmeans' & statistic!='ttest' & statistic!='ksmirnov' & statistic!='ranksum' & statistic!='hotelling'){stop(paste(statistic,'not a valid statistic'))}
   if (evalat!='cutoff' & evalat!='means'){stop('evalat only admits means or cutoff')}
   if (kernel!='uniform' & kernel!='triangular' & kernel!='epan'){stop(paste(kernel,'not a valid kernel'))}
   if (kernel!='uniform' & evalat!='cutoff'){stop('kernel can only be combined with evalat(cutoff)')}
-  if (kernel!='uniform' & statistic!='ttest'){stop('kernel only allowed for ttest')}
+  if (kernel!='uniform' & statistic!='ttest' & statistic!='diffmeans'){stop('kernel only allowed for diffmeans')}
 
   Rc = R - cutoff
-  D = R >= 0
-  n = length(D[!is.na(D)])
+  D = Rc >= 0
+
+  if (!missing(X)){
+    data = data.frame(Rc,D,X)
+    data = data[order(data$Rc),]
+    Rc = data[,1]
+    D = data[,2]
+    X = data[,c(-1,-2)]
+  } else {
+    data = data.frame(Rc,D)
+    data = data[order(data$Rc),]
+    Rc = data[,1]
+    D = data[,2]
+  }
+
+  n = length(Rc[!is.na(Rc)])
   n1 = sum(D,na.rm=TRUE)
   n0 = n - n1
+  dups = merge(Rc,table(Rc),by=1)
+  dups = dups[,2]
 
   if (!missing(X)){X = as.matrix(X)}
   if (seed!=''){set.seed(seed)}
@@ -147,23 +165,34 @@ rdwinselect = function(R, X,
     if (obsmin==''){
       obsmin = 10
     }
-    wmin = wlength(Rc,D,obsmin)
+    posl = sum(Rc<0,na.rm=TRUE)
+    posr = posl + 1
+    wmin = findwobs(obsmin,1,posl,posr,Rc,dups)
   }
 
   ## Define step
 
-  if (wstep==''){
+  if (wstep=='' & wobs==''){
     if (obsstep==''){
       obsstep = 2
     }
     wstep = findstep(Rc,D,obsmin,obsstep,10)
-  } else{
+    window.list = seq(from=wmin,by=wstep,length.out=nwindows)
+  } else if (wstep!=''){
+    if (wobs!=''){
+      stop('Cannot specify both wobs and wstep')
+    }
     if (obsstep!=''){
       stop('Cannot specify both obsstep and wstep')
     }
+    window.list = seq(from=wmin,by=wstep,length.out=nwindows)
+  } else if (wobs!=''){
+    pos0 = sum(Rc<0,na.rm=TRUE)
+    posl = pos0 - sum(Rc<0 & Rc>=-wmin,na.rm=TRUE)
+    posr = pos0 + 1 + sum(Rc>=0 & Rc<wmin,na.rm=TRUE)
+    window.list = findwobs(wobs,nwindows-1,posl,posr,Rc[!is.na(Rc)],dups[!is.na(Rc)])
+    window.list = c(wmin,window.list)
   }
-
-  window.list = seq(from=wmin,by=wstep,length.out=nwindows)
 
 
   #################################################################
@@ -247,8 +276,8 @@ rdwinselect = function(R, X,
 
     ## Sample sizes
 
-    n0.w = length(Dw) - sum(Dw)
-    n1.w = sum(Dw)
+    n0.w = sum(Rw<0)
+    n1.w = sum(Rw>=0)
     n.w = n0.w+n1.w
     table.rdw[col,4] = n0.w
     table.rdw[col,5] = n1.w
@@ -398,7 +427,7 @@ rdwinselect = function(R, X,
     rec.length = window.list[tmp]
     rec.window = c(cutoff-rec.length,cutoff+rec.length)
 
-    if (quietly==FALSE){
+    if (quietly==FALSE & tmp!=1){
       cat('\n\n')
       cat(paste0('Recommended window is [',round(rec.window[1],3),';',round(rec.window[2],3),'] with ',table.rdw[tmp,4]+table.rdw[tmp,5],' observations (',
                  table.rdw[tmp,4],' below, ',table.rdw[tmp,5],' above).'))

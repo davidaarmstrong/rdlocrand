@@ -1,7 +1,7 @@
 
 ###################################################################
 # rdrandinf: randomization inference in RD window
-# !version 0.1 4-Apr-2017
+# !version 0.2 22-Apr-2017
 # Authors: Matias Cattaneo, Rocio Titiunik, Gonzalo Vazquez-Bare
 ###################################################################
 
@@ -20,11 +20,11 @@
 #' Gonzalo Vazquez-Bare, University of Michigan. \email{gvazquez@umich.edu}
 #'
 #' @references
-#' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate.} \emph{Journal of Causal Inference} 3(1): 1-24.
+#' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
 #'
-#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization.} \emph{Stata Journal} 16(2): 331-367.
+#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
 #'
-#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality.} \emph{Journal of Policy Analysis and Management}, forthcoming.
+#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management}, forthcoming.
 #'
 #'
 #'
@@ -35,7 +35,7 @@
 #' @param wl the left limit of the window. The default takes the minimum of the running variable.
 #' @param wr the right limit of the window. The default takes the maximum of the running variable.
 #' @param reps the number of replications (default is 1000).
-#' @param statistic the statistic to be used in randomization inference. Options are \code{ttest} (difference in means), \code{ksmirnov} (Kolmogorov-Smirnov statistic), \code{ranksum} (Wilcoxon-Mann-Whitney standardized statistic) or \code{all}, which gives all three statistics. Default option is \code{ttest}.
+#' @param statistic the statistic to be used in the balance tests. Allowed options are \code{diffmeans} (difference in means statistic), \code{ksmirnov} (Kolmogorov-Smirnov statistic) and \code{ranksum} (Wilcoxon-Mann-Whitney standardized statistic). Default option is \code{diffmeans}. The statistic \code{ttest} is equivalent to \code{diffmeans} and included for backward compatibility.
 #' @param p the order of the polynomial for outcome transformation model (default is 0).
 #' @param nulltau the value of the treatment effect under the null hypothesis (default is 0).
 #' @param evall the point at the left of the cutoff at which to evaluate the transformed outcome is evaluated. Default is the cutoff value.
@@ -51,8 +51,8 @@
 #' @param quietly suppresses the output table.
 #' @param covariates the covariates used by \code{rdwinselect} to choose the window when \code{wl} and \code{wr} are not specified. This should be a matrix of size n x k where n is the total sample size and k is the number of covariates.
 #' @param obsmin the minimum number of observations above and below the cutoff in the smallest window employed by the companion command \code{rdwinselect}. Default is 10.
-#' @param obsstep the minimum number of observations to be added on each side of the cutoff for the sequence of nested windows constructed by the companion command \code{rdwinselect}. Default is 2.
 #' @param wmin the smallest window to be used (if \code{minobs} is not specified) by the companion command \code{rdwinselect}. Specifying both \code{wmin} and \code{obsmin} returns an error.
+#' @param wobs the number of observations to be added at each side of the cutoff at each step.
 #' @param wstep the increment in window length (if \code{obsstep} is not specified) by the companion command \code{rdwinselect}.  Specifying both \code{obsstep} and \code{wstep} returns an error.
 #' @param nwindows the number of windows to be used by the companion command \code{rdwinselect}. Default is 10.
 #' @param rdwstat the statistic to be used by the companion command \code{rdwinselect} (see corresponding help for options). Default option is \code{ttest}.
@@ -60,6 +60,7 @@
 #' @param rdwreps the number of replications to be used by the companion command \code{rdwinselect}. Default is 1000.
 #' @param level the minimum accepted value of the p-value from the covariate balance tests to be used by the companion command \code{rdwinselect}. Default is .15.
 #' @param plot draws a scatter plot of the minimum p-value from the covariate balance test against window length implemented by the companion command \code{rdwinselect}.
+#' @param obsstep the minimum number of observations to be added on each side of the cutoff for the sequence of fixed-increment nested windows. Default is 2. This option is deprecated and only included for backward compatibility.
 #'
 #' @return
 #' \item{sumstats}{summary statistics}
@@ -94,7 +95,7 @@ rdrandinf = function(Y,R,
                      wl = '',
                      wr = '',
                      reps = 1000,
-                     statistic = 'ttest',
+                     statistic = 'diffmeans',
                      p = 0,
                      nulltau = 0,
                      evall = '',
@@ -111,15 +112,16 @@ rdrandinf = function(Y,R,
 
                      covariates,
                      obsmin = '',
-                     obsstep = '',
                      wmin = '',
+                     wobs = '',
                      wstep = '',
                      nwindows = 10,
-                     rdwstat = 'ttest',
+                     rdwstat = 'diffmeans',
                      approx = FALSE,
                      rdwreps = 1000,
                      level = .15,
-                     plot = FALSE){
+                     plot = FALSE,
+                     obsstep = ''){
 
 
   #################################################################
@@ -145,16 +147,16 @@ rdrandinf = function(Y,R,
 
   if (cutoff<=min(R,na.rm=TRUE) | cutoff>=max(R,na.rm=TRUE)){stop('Cutoff must be within the range of the running variable')}
   if (p<0){stop('p must be a positive integer')}
-  if (statistic!='ttest' & statistic!='ksmirnov' & statistic!='ranksum' & statistic!='all'){stop(paste(statistic,'not a valid statistic'))}
+  if (statistic!='diffmeans' & statistic!='ttest' & statistic!='ksmirnov' & statistic!='ranksum' & statistic!='all'){stop(paste(statistic,'not a valid statistic'))}
   if (kernel!='uniform' & kernel!='triangular' & kernel!='epan'){stop(paste(kernel,'not a valid kernel'))}
   if (kernel!='uniform' & evall!='' & evalr!=''){
     if (evalr!=cutoff | evalr !=cutoff) {stop('kernel only allowed when evall=evalr=cutoff')}
   }
-  if (kernel!='uniform' & statistic!='ttest'){stop('kernel only allowed for ttest')}
+  if (kernel!='uniform' & statistic!='ttest' & statistic!='diffmeans'){stop('kernel only allowed for diffmeans')}
   if (!missing(ci)){if (ci[1]>1 | ci[1]<0){stop('ci must be in [0,1]')}}
   if (interfci!=''){
     if (interfci>1 | interfci<0){stop('interfci must be in [0,1]')}
-    if (statistic!='ttest' & statistic!='ksmirnov' & statistic!='ranksum'){stop('interfci only allowed with ttest, ksmirnov or ranksum')}
+    if (statistic!='diffmeans' & statistic!='ttest' & statistic!='ksmirnov' & statistic!='ranksum'){stop('interfci only allowed with ttest, ksmirnov or ranksum')}
   }
   if (!missing(bernoulli)){
     randmech = 'Bernoulli'
@@ -210,7 +212,7 @@ rdrandinf = function(Y,R,
     } else {
       wselect = 'rdwinselect'
       if (quietly==FALSE){cat('\nRunning rdwinselect...\n')}
-      rdwlength = rdwinselect(Rc.long,covariates,obsmin=obsmin,obsstep=obsstep,wmin=wmin,wstep=wstep,
+      rdwlength = rdwinselect(Rc.long,covariates,obsmin=obsmin,obsstep=obsstep,wmin=wmin,wstep=wstep,wobs=wobs,
                   nwindows=nwindows,statistic=rdwstat,approx=approx,
                   reps=rdwreps,plot=plot,level=level,quietly=TRUE)
       wl = rdwlength$window[1]
@@ -349,7 +351,7 @@ rdrandinf = function(Y,R,
     }
 
   } else {
-    if (statistic=='ttest'|statistic=='all'){
+    if (statistic=='diffmeans'|statistic=='ttest'|statistic=='all'){
       lfit = lm(Yw ~ Dw + Rpoly + Dw*Rpoly,weights=kweights)
       se = sqrt(diag(sandwich::vcovHC(lfit,type='HC2'))['Dw'])
       tstat = lfit$coefficients['Dw']/se
@@ -509,7 +511,7 @@ rdrandinf = function(Y,R,
 
 
   if (quietly==FALSE){
-    if (statistic=='ttest'){statdisp = 'Diff. in means'}
+    if (statistic=='diffmeans'|statistic=='ttest'){statdisp = 'Diff. in means'}
     if (statistic=='ksmirnov'){statdisp = 'Kolmogorov-Smirnov'}
     if (statistic=='ranksum'){statdisp = 'Rank sum z-stat'}
     if (fuzzy.stat=='ar'){
