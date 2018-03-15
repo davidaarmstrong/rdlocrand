@@ -4,11 +4,11 @@
 \alias{rdwinselect}
 \title{Window selection for RD designs under local randomization}
 \usage{
-rdwinselect(R, X, cutoff = 0, obsmin = "", wmin = "", wobs = "",
-  wstep = "", nwindows = 10, statistic = "diffmeans", approx = FALSE,
+rdwinselect(R, X, cutoff = 0, obsmin = NULL, wmin = NULL, wobs = NULL,
+  wstep = NULL, nwindows = 10, statistic = "diffmeans", approx = FALSE,
   p = 0, evalat = "cutoff", kernel = "uniform", reps = 1000,
-  seed = "", level = 0.15, plot = FALSE, quietly = FALSE,
-  obsstep = "")
+  seed = NULL, level = 0.15, plot = FALSE, quietly = FALSE,
+  obsstep = NULL)
 }
 \arguments{
 \item{R}{a vector containing the values of the running variable.}
@@ -80,11 +80,11 @@ tmp <- rdwinselect(R,X,wmin=.5,wstep=.125,approx=TRUE,nwin=80,quietly=TRUE,plot=
 
 }
 \references{
-M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
+M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
 
-M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
+M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
 
-M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management}, forthcoming.
+M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management} 36(3): 643-681.
 }
 \author{
 Matias Cattaneo, University of Michigan. \email{cattaneo@umich.edu}

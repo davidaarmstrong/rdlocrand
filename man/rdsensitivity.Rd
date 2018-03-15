@@ -6,7 +6,7 @@
 \usage{
 rdsensitivity(Y, R, cutoff = 0, wlist, tlist, ci, statistic = "diffmeans",
   nodraw = FALSE, p = 0, evalat = "cutoff", kernel = "uniform",
-  reps = 1000, seed = "", fuzzy = "", quietly = FALSE)
+  reps = 1000, seed = NULL, fuzzy = NULL, quietly = FALSE)
 }
 \arguments{
 \item{Y}{a vector containing the values of the outcome variable.}
@@ -61,11 +61,11 @@ tmp <- rdsensitivity(Y,R,wlist=seq(.75,2,by=.25),tlist=seq(0,5,by=1),reps=500)
 
 }
 \references{
-M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
+M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
 
-M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
+M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
 
-M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management}, forthcoming.
+M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management} 36(3): 643-681.
 }
 \author{
 Matias Cattaneo, University of Michigan. \email{cattaneo@umich.edu}

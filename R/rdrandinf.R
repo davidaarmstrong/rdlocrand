@@ -1,7 +1,7 @@
 
 ###################################################################
 # rdrandinf: randomization inference in RD window
-# !version 0.2 22-Apr-2017
+# !version 0.3 13-Mar-2018
 # Authors: Matias Cattaneo, Rocio Titiunik, Gonzalo Vazquez-Bare
 ###################################################################
 
@@ -20,11 +20,11 @@
 #' Gonzalo Vazquez-Bare, University of Michigan. \email{gvazquez@umich.edu}
 #'
 #' @references
-#' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
+#' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
 #'
-#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
+#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
 #'
-#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management}, forthcoming.
+#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management} 36(3): 643-681.
 #'
 #'
 #'
@@ -92,36 +92,36 @@
 
 rdrandinf = function(Y,R,
                      cutoff = 0,
-                     wl = '',
-                     wr = '',
+                     wl = NULL,
+                     wr = NULL,
                      reps = 1000,
                      statistic = 'diffmeans',
                      p = 0,
                      nulltau = 0,
-                     evall = '',
-                     evalr = '',
+                     evall = NULL,
+                     evalr = NULL,
                      kernel = 'uniform',
                      ci,
-                     interfci = '',
-                     seed = '',
-                     fuzzy = '',
-                     d = '',
-                     dscale = '',
-                     bernoulli,
+                     interfci = NULL,
+                     seed = NULL,
+                     fuzzy = NULL,
+                     d = NULL,
+                     dscale = NULL,
+                     bernoulli = NULL,
                      quietly = FALSE,
 
                      covariates,
-                     obsmin = '',
-                     wmin = '',
-                     wobs = '',
-                     wstep = '',
+                     obsmin = NULL,
+                     wmin = NULL,
+                     wobs = NULL,
+                     wstep = NULL,
                      nwindows = 10,
                      rdwstat = 'diffmeans',
                      approx = FALSE,
                      rdwreps = 1000,
                      level = .15,
                      plot = FALSE,
-                     obsstep = ''){
+                     obsstep = NULL){
 
 
   #################################################################
@@ -131,48 +131,82 @@ rdrandinf = function(Y,R,
   randmech = 'fixed margins'
 
   Rc.long = R - cutoff
-
-  if(missing(bernoulli)){
-    data = cbind(Y,R)
-    data = data[complete.cases(data),]
-    Y = data[,1]
-    R = data[,2]
-  } else{
-    data = cbind(Y,R,bernoulli)
-    data = data[complete.cases(data),]
-    Y = data[,1]
-    R = data[,2]
-    bernoulli = data[,3]
+  
+  if (!is.null(fuzzy)){
+    if (class(fuzzy)=='numeric'){
+      fuzzy.stat = 'ar'
+      fuzzy.tr = fuzzy
+    } else {
+      fuzzy.tr = as.numeric(fuzzy[-length(fuzzy)])
+      if (fuzzy[length(fuzzy)]=='ar'){fuzzy.stat = 'ar'}
+      else if (fuzzy[length(fuzzy)]=='tsls'){fuzzy.stat = 'wald'}
+      else {stop('fuzzy statistic not valid')}
+    }
+  }
+  else{fuzzy.stat=''}
+  
+  
+  
+  if(is.null(fuzzy)){
+    if(is.null(bernoulli)){
+      data = cbind(Y,R)
+      data = data[complete.cases(data),]
+      Y = data[,1]
+      R = data[,2]
+    } else{
+      data = cbind(Y,R,bernoulli)
+      data = data[complete.cases(data),]
+      Y = data[,1]
+      R = data[,2]
+      bernoulli = data[,3]
+    }
+  }
+  else {
+    if(missing(bernoulli)){
+      data = cbind(Y,R,fuzzy.tr)
+      data = data[complete.cases(data),]
+      Y = data[,1]
+      R = data[,2]
+      fuzzy.tr = data[,3]
+    } else{
+      data = cbind(Y,R,bernoulli,fuzzy.tr)
+      data = data[complete.cases(data),]
+      Y = data[,1]
+      R = data[,2]
+      bernoulli = data[,3]
+      fuzzy.tr = data[,4]
+    }
+    
   }
 
   if (cutoff<=min(R,na.rm=TRUE) | cutoff>=max(R,na.rm=TRUE)){stop('Cutoff must be within the range of the running variable')}
   if (p<0){stop('p must be a positive integer')}
   if (statistic!='diffmeans' & statistic!='ttest' & statistic!='ksmirnov' & statistic!='ranksum' & statistic!='all'){stop(paste(statistic,'not a valid statistic'))}
   if (kernel!='uniform' & kernel!='triangular' & kernel!='epan'){stop(paste(kernel,'not a valid kernel'))}
-  if (kernel!='uniform' & evall!='' & evalr!=''){
-    if (evalr!=cutoff | evalr !=cutoff) {stop('kernel only allowed when evall=evalr=cutoff')}
+  if (kernel!='uniform' & !is.null(evall) & !is.null(evalr)){
+    if (evall!=cutoff | evalr!=cutoff) {stop('kernel only allowed when evall=evalr=cutoff')}
   }
   if (kernel!='uniform' & statistic!='ttest' & statistic!='diffmeans'){stop('kernel only allowed for diffmeans')}
   if (!missing(ci)){if (ci[1]>1 | ci[1]<0){stop('ci must be in [0,1]')}}
-  if (interfci!=''){
+  if (!is.null(interfci)){
     if (interfci>1 | interfci<0){stop('interfci must be in [0,1]')}
     if (statistic!='diffmeans' & statistic!='ttest' & statistic!='ksmirnov' & statistic!='ranksum'){stop('interfci only allowed with ttest, ksmirnov or ranksum')}
   }
-  if (!missing(bernoulli)){
+  if (!is.null(bernoulli)){
     randmech = 'Bernoulli'
     if (max(bernoulli,na.rm=TRUE)>1 | min(bernoulli,na.rm=TRUE)<0){stop('bernoulli probabilities must be in [0,1]')}
     if (length(bernoulli)!=length(R)){stop('bernoulli should have the same length as the running variable')}
   }
-  if (wl!='' & wr!=''){
+  if (!is.null(wl) & !is.null(wr)){
     wselect = 'set by user'
     if (wl>=wr){stop('wl has to be smaller than wr')}
     if (wl>=cutoff | wr<=cutoff){stop('window does not include cutoff')}
   }
-  if (wl=='' & wr!=''){stop('wl not specified')}
-  if (wl!='' & wr==''){stop('wr not specified')}
-  if (evall!='' & evalr==''){stop('evalr not specified')}
-  if (evall=='' & evalr!=''){stop('evall not specified')}
-  if (d!='' & dscale!=''){stop('cannot specify both d and dscale')}
+  if (is.null(wl) & !is.null(wr)){stop('wl not specified')}
+  if (!is.null(wl) & is.null(wr)){stop('wr not specified')}
+  if (!is.null(evall) & is.null(evalr)){stop('evalr not specified')}
+  if (is.null(evall) & !is.null(evalr)){stop('evall not specified')}
+  if (!is.null(d) & !is.null(dscale)){stop('cannot specify both d and dscale')}
 
   Rc = R - cutoff
   D = as.numeric(Rc >= 0)
@@ -181,30 +215,14 @@ rdrandinf = function(Y,R,
   n1 = sum(D)
   n0 = n - n1
 
-  if (seed!=''){set.seed(seed)}
-
-  if (fuzzy!=''){
-    if (class(fuzzy)!='list'){
-      fuzzy.stat = 'ar'
-      fuzzy.tr = fuzzy
-    } else {
-      fuzzy.tr = fuzzy[[1]]
-      if (fuzzy[[2]]!='ar' & fuzzy[[2]]!='tsls'){
-        stop('fuzzy statistic not valid')
-      } else {
-        fuzzy.stat = 'wald'
-      }
-    }
-  } else {
-    fuzzy.stat = ''
-  }
+  if (!is.null(seed)){set.seed(seed)}
 
 
   #################################################################
   # Window selection
   #################################################################
 
-  if (wl=='' & wr==''){
+  if (is.null(wl) & is.null(wr)){
     if (missing(covariates)){
       wl = min(R,na.rm=TRUE)
       wr = max(R,na.rm=TRUE)
@@ -215,27 +233,27 @@ rdrandinf = function(Y,R,
       rdwlength = rdwinselect(Rc.long,covariates,obsmin=obsmin,obsstep=obsstep,wmin=wmin,wstep=wstep,wobs=wobs,
                   nwindows=nwindows,statistic=rdwstat,approx=approx,
                   reps=rdwreps,plot=plot,level=level,quietly=TRUE)
-      wl = rdwlength$window[1]
-      wr = rdwlength$window[2]
+      wl = cutoff + rdwlength$window[1]
+      wr = cutoff + rdwlength$window[2]
       if (quietly==FALSE){cat('\nrdwinselect complete.\n')}
     }
   }
-  if (quietly==FALSE){cat(paste0('\nSelected window = [',wl,';',wr,'] \n'))}
+  if (quietly==FALSE){cat(paste0('\nSelected window = [',round(wl,3),';',round(wr,3),'] \n'))}
 
 
-  if (evall!=''&evalr!=''){if (evall<wl | evalr>wr){stop('evall and evalr need to be inside window')}}
+  if (!is.null(evall)&!is.null(evalr)){if (evall<wl | evalr>wr){stop('evall and evalr need to be inside window')}}
 
-  ww = (Rc >= wl) & (Rc <= wr)
+  ww =  (R >= wl) & (R <= wr)
 
   Yw = Y[ww]
   Rw = Rc[ww]
   Dw = D[ww]
 
-  if (fuzzy!=''){
+  if (!is.null(fuzzy)){
       Tw = fuzzy.tr[ww]
   }
 
-  if (missing(bernoulli)){
+  if (is.null(bernoulli)){
     data = cbind(Yw,Rw,Dw)
     data = data[complete.cases(data),]
     Yw = data[,1]
@@ -256,7 +274,7 @@ rdrandinf = function(Y,R,
   n1.w = sum(Dw)
   n0.w = n.w - n1.w
 
-
+  
   #################################################################
   # Summary statistics
   #################################################################
@@ -272,13 +290,13 @@ rdrandinf = function(Y,R,
   sumstats[4,] = c(sd0,sd1)
   sumstats[5,] = c(wl,wr)
 
-  if (d=='' & dscale==''){
+  if (is.null(d) & is.null(dscale)){
     delta = .5*sd0
   }
-  if (d!='' & dscale==''){
+  if (!is.null(d) & is.null(dscale)){
     delta = d
   }
-  if (d=='' & dscale!=''){
+  if (is.null(d) & !is.null(dscale)){
     delta = dscale*sd0
   }
 
@@ -309,7 +327,7 @@ rdrandinf = function(Y,R,
   Y.adj = Yw
 
   if (p>0){
-    if (evall=='' & evalr==''){
+    if (is.null(evall) & is.null(evalr)){
       evall = cutoff
       evalr = cutoff
     }
@@ -329,7 +347,7 @@ rdrandinf = function(Y,R,
   #################################################################
 
 
-  if (fuzzy==''){
+  if (is.null(fuzzy)){
     results = rdrandinf.model(Y.adj.null,Dw,statistic=statistic,pvalue=TRUE,kweights=kweights,delta=delta)
   } else {
     results = rdrandinf.model(Y.adj.null,Dw,statistic=fuzzy.stat,endogtr=Tw,pvalue=TRUE,kweights=kweights,delta=delta)
@@ -393,7 +411,7 @@ rdrandinf = function(Y,R,
   if (quietly==FALSE){cat('\nRunning randomization-based test...\n')}
 
   if (fuzzy.stat!='wald'){
-    if (missing(bernoulli)){
+    if (is.null(bernoulli)){
 
       max.reps = choose(n.w,n1.w)
       reps = min(reps,max.reps)
@@ -403,7 +421,7 @@ rdrandinf = function(Y,R,
 
       for (i in 1:reps) {
         D.sample = sample(Dw,replace=FALSE)
-        if (missing(fuzzy) |  fuzzy==''){
+        if (is.null(fuzzy)){
           obs.stat.sample = as.numeric(rdrandinf.model(Y.adj.null,D.sample,statistic,kweights=kweights,delta=delta)$statistic)
         } else {
           obs.stat.sample = as.numeric(rdrandinf.model(Y.adj.null,D.sample,statistic=fuzzy.stat,endogtr=Tw,kweights=kweights,delta=delta)$statistic)
@@ -463,7 +481,7 @@ rdrandinf = function(Y,R,
   # Confidence interval under interference
   #################################################################
 
-  if (interfci!=''){
+  if (!is.null(interfci)){
     p.low = interfci/2
     p.high = 1-interfci/2
     qq = quantile(stats.distr,probs=c(p.low,p.high))
@@ -476,14 +494,14 @@ rdrandinf = function(Y,R,
   #################################################################
 
 
-  if (missing(ci) & interfci==''){
+  if (missing(ci) & is.null(interfci)){
     output = list(sumstats = sumstats,
                   obs.stat = obs.stat,
                   p.value = p.value,
                   asy.pvalue = asy.pval,
                   window = c(wl,wr))
   }
-  if (!missing(ci) & interfci==''){
+  if (!missing(ci) & is.null(interfci)){
     output = list(sumstats = sumstats,
                   obs.stat = obs.stat,
                   p.value = p.value,
@@ -491,7 +509,7 @@ rdrandinf = function(Y,R,
                   window = c(wl,wr),
                   ci = conf.int)
   }
-  if (missing(ci) & interfci!=''){
+  if (missing(ci) & !is.null(interfci)){
     output = list(sumstats = sumstats,
                   obs.stat = obs.stat,
                   p.value = p.value,
@@ -499,7 +517,7 @@ rdrandinf = function(Y,R,
                   window = c(wl,wr),
                   interf.ci = interf.ci)
   }
-  if (!missing(ci) & interfci!=''){
+  if (!missing(ci) & !is.null(interfci)){
     output = list(sumstats = sumstats,
                   obs.stat = obs.stat,
                   p.value = p.value,
@@ -585,7 +603,7 @@ rdrandinf = function(Y,R,
       cat(paste0((1-ci.level)*100,'% confidence interval: [',conf.int[1],',',conf.int[2],']\n'))
     }
 
-    if (interfci!=''){
+    if (!is.null(interfci)){
       cat('\n')
       cat(paste0((1-interfci)*100,'% confidence interval under interference: [',round(interf.ci[1],3),';',round(interf.ci[2],3),']')); cat('\n')
     }

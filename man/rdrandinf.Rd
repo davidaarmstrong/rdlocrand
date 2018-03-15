@@ -4,13 +4,13 @@
 \alias{rdrandinf}
 \title{Randomization Inference for RD Designs under Local Randomization}
 \usage{
-rdrandinf(Y, R, cutoff = 0, wl = "", wr = "", reps = 1000,
-  statistic = "diffmeans", p = 0, nulltau = 0, evall = "", evalr = "",
-  kernel = "uniform", ci, interfci = "", seed = "", fuzzy = "",
-  d = "", dscale = "", bernoulli, quietly = FALSE, covariates,
-  obsmin = "", wmin = "", wobs = "", wstep = "", nwindows = 10,
-  rdwstat = "diffmeans", approx = FALSE, rdwreps = 1000, level = 0.15,
-  plot = FALSE, obsstep = "")
+rdrandinf(Y, R, cutoff = 0, wl = NULL, wr = NULL, reps = 1000,
+  statistic = "diffmeans", p = 0, nulltau = 0, evall = NULL,
+  evalr = NULL, kernel = "uniform", ci, interfci = NULL, seed = NULL,
+  fuzzy = NULL, d = NULL, dscale = NULL, bernoulli = NULL,
+  quietly = FALSE, covariates, obsmin = NULL, wmin = NULL, wobs = NULL,
+  wstep = NULL, nwindows = 10, rdwstat = "diffmeans", approx = FALSE,
+  rdwreps = 1000, level = 0.15, plot = FALSE, obsstep = NULL)
 }
 \arguments{
 \item{Y}{a vector containing the values of the outcome variable.}
@@ -109,11 +109,11 @@ tmp <- rdrandinf(Y,R,statistic='all',covariates=X,wmin=.5,wstep=.125,rdwreps=500
 
 }
 \references{
-M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
+M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
 
-M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
+M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
 
-M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management}, forthcoming.
+M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management} 36(3): 643-681.
 }
 \author{
 Matias Cattaneo, University of Michigan. \email{cattaneo@umich.edu}

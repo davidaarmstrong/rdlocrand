@@ -1,7 +1,7 @@
 
 ###################################################################
 # rdwinselect: window selection for randomization inference in RD
-# !version 0.2 22-Apr-2017
+# !version 0.3 13-Mar-2018
 # Authors: Matias Cattaneo, Rocio Titiunik, Gonzalo Vazquez-Bare
 ###################################################################
 
@@ -24,11 +24,11 @@
 #' Gonzalo Vazquez-Bare, University of Michigan. \email{gvazquez@umich.edu}
 #'
 #' @references
-#' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
+#' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
 #'
-#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
+#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2016). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2016_Stata.pdf}{Inference in Regression Discontinuity Designs under Local Randomization}. \emph{Stata Journal} 16(2): 331-367.
 #'
-#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{http://www-personal.umich.edu/~cattaneo/papers/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management}, forthcoming.
+#' M.D. Cattaneo, R. Titiunik and G. Vazquez-Bare. (2017). \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Titiunik-VazquezBare_2017_JPAM.pdf}{Comparing Inference Approaches for RD Designs: A Reexamination of the Effect of Head Start on Child Mortality}. \emph{Journal of Policy Analysis and Management} 36(3): 643-681.
 #'
 #'
 #' @param R a vector containing the values of the running variable.
@@ -75,10 +75,10 @@
 
 rdwinselect = function(R, X,
                        cutoff=0,
-                       obsmin='',
-                       wmin = '',
-                       wobs = '',
-                       wstep = '',
+                       obsmin=NULL,
+                       wmin = NULL,
+                       wobs = NULL,
+                       wstep = NULL,
                        nwindows = 10,
                        statistic = 'diffmeans',
                        approx = FALSE,
@@ -86,11 +86,11 @@ rdwinselect = function(R, X,
                        evalat = 'cutoff',
                        kernel = 'uniform',
                        reps = 1000,
-                       seed = '',
+                       seed = NULL,
                        level = .15,
                        plot = FALSE,
                        quietly = FALSE,
-                       obsstep = '') {
+                       obsstep = NULL) {
 
 
   #################################################################
@@ -108,7 +108,7 @@ rdwinselect = function(R, X,
 
   Rc = R - cutoff
   D = Rc >= 0
-
+  
   if (!missing(X)){
     data = data.frame(Rc,D,X)
     data = data[order(data$Rc),]
@@ -129,7 +129,7 @@ rdwinselect = function(R, X,
   dups = dups[,2]
 
   if (!missing(X)){X = as.matrix(X)}
-  if (seed!=''){set.seed(seed)}
+  if (!is.null(seed)){set.seed(seed)}
 
   if (approx==FALSE){testing.method='rdrandinf'}else{testing.method='approximate'}
 
@@ -155,14 +155,14 @@ rdwinselect = function(R, X,
 
   ## Define smallest window
 
-  if (wmin!=''){
-    if (obsmin!=''){
+  if (!is.null(wmin)){
+    if (!is.null(obsmin)){
       stop('Cannot specify both obsmin and wmin')
     } else{
       obsmin = 10
     }
   } else{
-    if (obsmin==''){
+    if (is.null(obsmin)){
       obsmin = 10
     }
     posl = sum(Rc<0,na.rm=TRUE)
@@ -171,22 +171,22 @@ rdwinselect = function(R, X,
   }
 
   ## Define step
-
-  if (wstep=='' & wobs==''){
-    if (obsstep==''){
+  
+  if (is.null(wstep) & is.null(wobs)){
+    if (is.null(obsstep)){
       obsstep = 2
     }
     wstep = findstep(Rc,D,obsmin,obsstep,10)
     window.list = seq(from=wmin,by=wstep,length.out=nwindows)
-  } else if (wstep!=''){
-    if (wobs!=''){
+  } else if (!is.null(wstep)){
+    if (!is.null(wobs)){
       stop('Cannot specify both wobs and wstep')
     }
-    if (obsstep!=''){
+    if (!is.null(obsstep)){
       stop('Cannot specify both obsstep and wstep')
     }
     window.list = seq(from=wmin,by=wstep,length.out=nwindows)
-  } else if (wobs!=''){
+  } else if (!is.null(wobs)){
     pos0 = sum(Rc<0,na.rm=TRUE)
     posl = pos0 - sum(Rc<0 & Rc>=-wmin,na.rm=TRUE)
     posr = pos0 + 1 + sum(Rc>=0 & Rc<wmin,na.rm=TRUE)
