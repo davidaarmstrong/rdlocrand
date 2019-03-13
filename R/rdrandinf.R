@@ -1,7 +1,7 @@
 
 ###################################################################
 # rdrandinf: randomization inference in RD window
-# !version 0.3 13-Mar-2018
+# !version 0.4 12-Mar-2019
 # Authors: Matias Cattaneo, Rocio Titiunik, Gonzalo Vazquez-Bare
 ###################################################################
 
@@ -17,7 +17,7 @@
 #'
 #' Rocio Titiunik, University of Michigan. \email{titiunik@umich.edu}
 #'
-#' Gonzalo Vazquez-Bare, University of Michigan. \email{gvazquez@umich.edu}
+#' Gonzalo Vazquez-Bare, UC Santa Barbara. \email{gvazquez@econ.ucsb.edu}
 #'
 #' @references
 #' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
@@ -131,7 +131,7 @@ rdrandinf = function(Y,R,
   randmech = 'fixed margins'
 
   Rc.long = R - cutoff
-  
+
   if (!is.null(fuzzy)){
     if (class(fuzzy)=='numeric'){
       fuzzy.stat = 'ar'
@@ -144,9 +144,9 @@ rdrandinf = function(Y,R,
     }
   }
   else{fuzzy.stat=''}
-  
-  
-  
+
+
+
   if(is.null(fuzzy)){
     if(is.null(bernoulli)){
       data = cbind(Y,R)
@@ -176,7 +176,7 @@ rdrandinf = function(Y,R,
       bernoulli = data[,3]
       fuzzy.tr = data[,4]
     }
-    
+
   }
 
   if (cutoff<=min(R,na.rm=TRUE) | cutoff>=max(R,na.rm=TRUE)){stop('Cutoff must be within the range of the running variable')}
@@ -274,7 +274,7 @@ rdrandinf = function(Y,R,
   n1.w = sum(Dw)
   n0.w = n.w - n1.w
 
-  
+
   #################################################################
   # Summary statistics
   #################################################################
@@ -465,11 +465,11 @@ rdrandinf = function(Y,R,
     ci.level = ci[1]
     if (length(ci)>1){
       tlist = ci[-1]
-      aux = rdsensitivity(Y,Rc,wlist=wr,tlist=tlist,ci=c(wr,ci.level),
+      aux = rdsensitivity(Y,Rc,p=p,wlist=wr,tlist=tlist,ci=c(wr,ci.level),
                           reps=reps,nodraw=TRUE)
 
     } else {
-      aux = rdsensitivity(Y,Rc,wlist=wr,ci=c(wr,ci.level),
+      aux = rdsensitivity(Y,Rc,p=p,wlist=wr,ci=c(wr,ci.level),
                           reps=reps,nodraw=TRUE)
 
     }

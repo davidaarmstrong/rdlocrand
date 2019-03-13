@@ -1,7 +1,7 @@
 
 ###################################################################
 # rdwinselect: window selection for randomization inference in RD
-# !version 0.3 13-Mar-2018
+# !version 0.4 13-Mar-2019
 # Authors: Matias Cattaneo, Rocio Titiunik, Gonzalo Vazquez-Bare
 ###################################################################
 
@@ -21,7 +21,7 @@
 #'
 #' Rocio Titiunik, University of Michigan. \email{titiunik@umich.edu}
 #'
-#' Gonzalo Vazquez-Bare, University of Michigan. \email{gvazquez@umich.edu}
+#' Gonzalo Vazquez-Bare, UC Santa Barbara. \email{gvazquez@econ.ucsb.edu}
 #'
 #' @references
 #' M.D. Cattaneo, B. Frandsen and R. Titiunik. (2015).  \href{https://sites.google.com/site/rdpackages/rdlocrand/Cattaneo-Frandsen-Titiunik_2015_JCI.pdf}{Randomization Inference in the Regression Discontinuity Design: An Application to Party Advantages in the U.S. Senate}. \emph{Journal of Causal Inference} 3(1): 1-24.
@@ -108,22 +108,24 @@ rdwinselect = function(R, X,
 
   Rc = R - cutoff
   D = Rc >= 0
-  
+
   if (!missing(X)){
     data = data.frame(Rc,D,X)
+    data = data[complete.cases(data),]
     data = data[order(data$Rc),]
     Rc = data[,1]
     D = data[,2]
     X = data[,c(-1,-2)]
   } else {
     data = data.frame(Rc,D)
+    data = data[complete.cases(data),]
     data = data[order(data$Rc),]
     Rc = data[,1]
     D = data[,2]
   }
 
-  n = length(Rc[!is.na(Rc)])
-  n1 = sum(D,na.rm=TRUE)
+  n = length(Rc)
+  n1 = sum(D)
   n0 = n - n1
   dups = merge(Rc,table(Rc),by=1)
   dups = dups[,2]
@@ -171,7 +173,7 @@ rdwinselect = function(R, X,
   }
 
   ## Define step
-  
+
   if (is.null(wstep) & is.null(wobs)){
     if (is.null(obsstep)){
       obsstep = 2

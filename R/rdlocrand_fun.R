@@ -1,7 +1,7 @@
 
 #################################################################
 # Auxiliary functions for rdlocrand
-# !version 0.3 13-Mar-2018
+# !version 0.4 13-Mar-2019
 # Authors: Matias Cattaneo, Rocio Titiunik, Gonzalo Vazquez-Bare
 #################################################################
 
@@ -194,7 +194,7 @@ hotelT2 = function(X,D) {
 #################################################################
 
 findwobs = function(wobs,nwin,posl,posr,R,dups){
-  
+
   N = length(R)
   Nc = sum(R<0)
   Nt = sum(R>=0)
@@ -202,39 +202,39 @@ findwobs = function(wobs,nwin,posl,posr,R,dups){
   posrold = posr
   wlist = NULL
   win = 1
-  
+
   while(win<=nwin & wobs<min(posl,Nt-(posr-Nc-1))){
-    
+
     poslold = posl
     posrold = posr
-    
+
     while(dups[posl]<wobs & sum(R[posl]<=R[posl:poslold])<wobs){
       posl = posl - dups[posl]
     }
-    
+
     while(dups[posr]<wobs & sum(R[posrold:posr]<=R[posr])<wobs){
       posr = posr + dups[posr]
     }
-    
+
     if(abs(R[posl])<R[posr]){
       posl = Nc + 1 - sum(-R[posr]<=R[1:Nc])
     }
-    
+
     if(abs(R[posl])>R[posr]){
       posr = sum(R[(Nc+1):N]<abs(R[posl])) + Nc
     }
-    
+
     wlength = max(-R[posl],R[posr])
     wlist = c(wlist,wlength)
-    
+
     posl = posl - 1
     posr = posr + 1
     win = win + 1
-    
+
   }
-  
+
   return(wlist)
-  
+
 }
 
 
