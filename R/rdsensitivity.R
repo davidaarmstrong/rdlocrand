@@ -112,8 +112,10 @@ rdsensitivity = function(Y,R,
   if (missing(tlist)){
     D = as.numeric(Rc >= 0)
     aux = lm(Y ~ D)
-    ci.ub = round(aux$coefficients['D']+1.96*sqrt(vcov(aux)['D','D']),2)
-    ci.lb = round(aux$coefficients['D']-1.96*sqrt(vcov(aux)['D','D']),2)
+    qtile <- (1-(ci/2))
+    crit <- qt(qtile, df=length(Y)-2)
+    ci.ub = round(aux$coefficients['D']+crit*sqrt(vcov(aux)['D','D']),2)
+    ci.lb = round(aux$coefficients['D']-crit*sqrt(vcov(aux)['D','D']),2)
     wstep = round((ci.ub-ci.lb)/10,2)
     tlist = seq(ci.lb,ci.ub,by=wstep)
   }
